@@ -17,3 +17,23 @@ export function validateShortUrl(shortUrl: string): boolean {
   );
   return schema.safeParse(shortUrl).success;
 }
+
+export function validateOriginalUrl(originalUrl: string): boolean {
+  const schema = z.string().url({
+    message: "URL original inválida. Deve ser uma URL completa com protocolo (http:// ou https://)"
+  }).refine(
+    url => {
+      try {
+        const parsedUrl = new URL(url);
+        return parsedUrl.protocol === "http:" || parsedUrl.protocol === "https:";
+      } catch {
+        return false;
+      }
+    },
+    {
+      message: "A URL deve usar http:// ou https://"
+    }
+  );
+
+  return schema.safeParse(originalUrl).success;
+}
