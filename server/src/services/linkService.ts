@@ -1,6 +1,6 @@
 import { AppError } from '@/app/errors/appError';
 import { ILink, ICreateLink } from '../app/interfaces/ILink';
-import { validateShortUrl } from '../app/utils/generateShortUrl';
+import { validateOriginalUrl, validateShortUrl } from '../app/utils/generateShortUrl';
 import { LinkRepository } from '@/repositories/linkRepository';
 import { GetObjectCommand, HeadObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
 import { format } from 'date-fns';
@@ -12,22 +12,30 @@ export class LinkService {
   constructor(private linkRepository: LinkRepository) {}
 
   async createLink(data: ICreateLink): Promise<ILink> {
-    if (!validateShortUrl(data.shortUrl)) {
+    if (!validateShortUrl(data.shortUrl) && !validateOriginalUrl(data.originalUrl)) {
+      throw new AppError('Both short and original URL have invalid format', 400);
+    }
+    
+    else if (!validateShortUrl(data.shortUrl)) {
       throw new AppError('Invalid short URL format', 400);
+    }
+    
+    else if (!validateOriginalUrl(data.originalUrl)) {
+      throw new AppError('Invalid original URL format', 400);
     }
   
     const existingShortLink = await this.linkRepository.findByShortUrl(data.shortUrl);
     const existingOriginalLink = await this.linkRepository.findByOriginalUrl(data.originalUrl);
     
     if (existingShortLink && existingOriginalLink) {
-      throw new AppError('Both short URL and original URL already exist', 409);
+      throw new AppError('Both short and original URL already exists', 409);
     }
     
-    if (existingShortLink) {
+    else if (existingShortLink) {
       throw new AppError('Short URL already exists', 409);
     }
     
-    if (existingOriginalLink) {
+    else if (existingOriginalLink) {
       throw new AppError('Original URL already exists', 409);
     }
   
