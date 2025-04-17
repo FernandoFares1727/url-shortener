@@ -7,6 +7,7 @@ const app = fastify({ logger: true });
 // Register plugins
 app.register(cors, {
   origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE']
 });
 
 // Register routes
