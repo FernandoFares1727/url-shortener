@@ -1,7 +1,7 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { LinkService } from '@/services/linkService';
 import { LinkRepository } from '@/repositories/linkRepository';
-import { ICreateLink, IIncrementLink } from '@/app/interfaces/ILink';
+import { ICreateLink} from '@/app/interfaces/Interfaces';
 
 const linkRepository = new LinkRepository();
 const linkService = new LinkService(linkRepository);
@@ -12,21 +12,21 @@ export class LinkController {
     reply: FastifyReply
   ) {
     const { originalUrl, shortUrl } = request.body;
-    const link = await linkService.createLink({ originalUrl, shortUrl });
-    return reply.code(201).send(link);
+    const result = await linkService.createLink({ originalUrl, shortUrl });
+    return reply.code(201).send(result);
   }
 
   async redirectToOriginalUrl(
-    request: FastifyRequest<{ Body: IIncrementLink }>,
+    request: FastifyRequest<{ Params: { id: string } }>,
     reply: FastifyReply
   ) {
-    const originalUrl = await linkService.getOriginalUrl(request.body.shortUrl);
-    return reply.code(200).send({ originalUrl });
+    const result = await linkService.redirectToOriginalUrl(request.params.id);
+    return reply.code(200).send(result);
   }
 
   async getAllLinks(request: FastifyRequest, reply: FastifyReply) {
-    const links = await linkService.getAllLinks();
-    return reply.code(200).send(links);
+    const result = await linkService.getAllLinks();
+    return reply.code(200).send(result);
   }
 
   async deleteLink(

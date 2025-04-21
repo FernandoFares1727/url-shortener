@@ -1,5 +1,5 @@
 import { AppError } from '@/app/errors/appError';
-import { ILink, ICreateLink } from '../app/interfaces/ILink';
+import { ILink, ICreateLink, IRedirectLink } from '../app/interfaces/Interfaces';
 import { validateOriginalUrl, validateShortUrl } from '../app/utils/generateShortUrl';
 import { LinkRepository } from '@/repositories/linkRepository';
 import { GetObjectCommand, HeadObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
@@ -42,14 +42,23 @@ export class LinkService {
     return this.linkRepository.create(data);
   }
 
-  async getOriginalUrl(shortUrl: string): Promise<string> {
-    const link = await this.linkRepository.findByShortUrl(shortUrl);
+  async redirectToOriginalUrl(id: string): Promise<IRedirectLink> {
+    const link = await this.linkRepository.findById(id);
     if (!link) {
       throw new AppError('Link not found', 404);
     }
 
     await this.linkRepository.incrementAccessCount(link.id);
-    return link.originalUrl;
+    const updatedLink = await this.linkRepository.findById(link.id);
+
+    if (!updatedLink){
+      throw new AppError('Updated link not found', 404);
+    }
+
+    return {
+      originalUrl: updatedLink.originalUrl,
+      acessCount: updatedLink.accessCount
+    };
   }
 
   async getAllLinks(): Promise<ILink[]> {

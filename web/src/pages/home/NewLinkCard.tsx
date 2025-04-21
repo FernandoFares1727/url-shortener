@@ -61,7 +61,7 @@ function NewLinkCard({ onAddLink }: NewLinkCardProps) {
     <div className="bg-white p-6 rounded-lg shadow-md w-full md:w-1/2 mb-4 md:mb-0 md:mr-4">
       <h2 className="text-xl text-gray-600 font-bold mb-4">Novo link</h2>
       {error && (
-        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded text-sm">
+        <div className="mb-4 p-3 bg-red-100 text-danger rounded text-sm">
           {error}
         </div>
       )}
@@ -73,9 +73,9 @@ function NewLinkCard({ onAddLink }: NewLinkCardProps) {
 
       {/* Mensagem de carregamento durante a criação */}
       {isLoading && (
-        <div className="mb-4 p-3 bg-blue-50 text-blue-700 rounded text-sm flex items-center">
+        <div className="mb-4 p-3 bg-blue-50 text-blue-dark rounded text-sm flex items-center">
           <svg
-            className="animate-spin -ml-1 mr-2 h-4 w-4 text-blue-500"
+            className="animate-spin -ml-1 mr-2 h-4 w-4 text-blue-base"
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
@@ -142,7 +142,7 @@ function NewLinkCard({ onAddLink }: NewLinkCardProps) {
         <button
           type="submit"
           disabled={isLoading}
-          className={`w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700 transition-colors text-md font-semibold ${
+          className={`w-full bg-blue-base text-white p-2 rounded hover:bg-blue-dark transition-colors text-md font-semibold cursor-pointer ${
             isLoading ? "opacity-50 cursor-not-allowed" : ""
           }`}
         >
