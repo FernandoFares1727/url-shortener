@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { ILink, ICreateLink } from '../app/interfaces/ILink';
+import { ILink, ICreateLink } from '../app/interfaces/Interfaces';
 
 const prisma = new PrismaClient();
 

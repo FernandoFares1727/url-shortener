@@ -1,6 +1,6 @@
+import { ICreateLink } from '@/app/interfaces/Interfaces';
 import { LinkController } from '@/controllers/linkController';
 import { FastifyInstance } from 'fastify';
-import { ICreateLink, IIncrementLink } from '@/app/interfaces/ILink';
 
 const linkController = new LinkController();
 
@@ -24,8 +24,8 @@ export async function linkRoutes(fastify: FastifyInstance) {
   );
 
   // Rota de redirecionamento com parâmetro na URL
-  fastify.post<{ Body: IIncrementLink }>(
-    '/link/redirect',
+  fastify.get<{ Params: { id: string } }>(
+    '/redirect/link/:id',
     (request, reply) => linkController.redirectToOriginalUrl(request, reply)
   );
 

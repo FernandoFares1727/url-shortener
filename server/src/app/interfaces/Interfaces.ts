@@ -12,8 +12,9 @@ export interface ILink {
     shortUrl: string;
   }
 
-  export interface IIncrementLink {
-    shortUrl: string;
+  export interface IRedirectLink {
+    originalUrl: string;
+    acessCount: number;
   }
   
   export interface ILinkCSV {

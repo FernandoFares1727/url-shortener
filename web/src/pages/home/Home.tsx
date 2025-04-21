@@ -1,4 +1,3 @@
-// Home.tsx
 import { useState, useEffect } from "react";
 import Logo from "../assets/Logo.svg";
 import LinksCard from "./LinksCard";
@@ -9,7 +8,7 @@ function Home() {
   const [links, setLinks] = useState<LinkItemProps[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [deletingIds, setDeletingIds] = useState<string[]>([]); // IDs dos links sendo deletados
+  const [deletingIds, setDeletingIds] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchLinks = async () => {
@@ -45,7 +44,7 @@ function Home() {
 
   const handleDeleteLink = async (id: string) => {
     try {
-      setDeletingIds((prev) => [...prev, id]); // Adiciona o ID à lista de itens sendo deletados
+      setDeletingIds((prev) => [...prev, id]);
 
       const response = await fetch(`http://localhost:3333/api/v1/link/${id}`, {
         method: "DELETE",
@@ -63,18 +62,55 @@ function Home() {
           : "Ocorreu um erro ao deletar o link",
       );
     } finally {
-      setDeletingIds((prev) => prev.filter((deletingId) => deletingId !== id)); // Remove o ID da lista
+      setDeletingIds((prev) => prev.filter((deletingId) => deletingId !== id));
     }
   };
 
-  const handleAddLink = (newLink: LinkItemProps) => {
+  const handleAddLink = (
+    newLink: Omit<LinkItemProps, "onAccess" | "onDelete">,
+  ) => {
     setLinks((prevLinks) => [
       {
         ...newLink,
         onDelete: () => handleDeleteLink(newLink.id),
+        onAccess: handleLinkAccess,
       },
       ...prevLinks,
     ]);
+  };
+
+  const handleLinkAccess = async (id: string): Promise<string> => {
+    try {
+      const response = await fetch(
+        `http://localhost:3333/api/v1/redirect/link/${id}`,
+      );
+      const data = await response.json();
+      const newAcessCount = data.acessCount;
+
+      if (!response.ok || !data.originalUrl) {
+        throw new Error(data.error || "Erro ao acessar link");
+      }
+
+      setLinks((prevLinks) =>
+        prevLinks.map((link) => {
+          if (link.id === id) {
+            return {
+              ...link,
+              accessCount: newAcessCount,
+            };
+          }
+          return link;
+        }),
+      );
+
+      return data.originalUrl;
+    } catch (err) {
+      throw new Error(
+        err instanceof Error
+          ? err.message
+          : "Erro desconhecido ao acessar link",
+      );
+    }
   };
 
   const sortedLinks = [...links].sort(
@@ -93,7 +129,7 @@ function Home() {
           {isLoading ? (
             <div className="text-center py-8">Carregando links...</div>
           ) : error ? (
-            <div className="mb-4 p-3 bg-red-100 text-red-700 rounded text-sm">
+            <div className="mb-4 p-3 bg-red-100 text-danger rounded text-sm">
               {error}
             </div>
           ) : (
@@ -105,6 +141,7 @@ function Home() {
                   isDeleting: deletingIds.includes(link.id),
                 }))}
                 onDelete={handleDeleteLink}
+                onAccess={handleLinkAccess}
               />
             </div>
           )}

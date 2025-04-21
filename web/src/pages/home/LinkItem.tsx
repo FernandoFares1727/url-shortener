@@ -1,4 +1,3 @@
-// LinkItem.tsx
 import { Copy, Trash } from "@phosphor-icons/react";
 
 export type LinkItemProps = {
@@ -8,8 +7,9 @@ export type LinkItemProps = {
   accessCount: number;
   createdAt: string;
   onDelete: (id: string) => void;
+  onAccess: (id: string) => Promise<string>; // Nova prop para lidar com o acesso
   isLast?: boolean;
-  isDeleting?: boolean; // Nova prop para indicar se o item está sendo deletado
+  isDeleting?: boolean;
 };
 
 export function LinkItem({
@@ -18,6 +18,7 @@ export function LinkItem({
   shortUrl,
   accessCount,
   onDelete,
+  onAccess,
   isLast = false,
   isDeleting = false,
 }: LinkItemProps) {
@@ -25,14 +26,25 @@ export function LinkItem({
     navigator.clipboard.writeText(originalUrl);
   };
 
+  const handleLinkClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    try {
+      const originalUrl = await onAccess(id);
+      // Abre nova aba com a página de redirecionamento
+      window.open(`/redirect?url=${encodeURIComponent(originalUrl)}`, "_blank");
+    } catch (error) {
+      console.error("Erro ao acessar link:", error);
+    }
+  };
+
   return (
     <div
       className={`w-full flex items-center justify-between p-3 ${isLast ? "" : "border-b border-gray-200"} ${isDeleting ? "opacity-50" : ""}`}
     >
       {isDeleting ? (
-        <div className="flex items-center text-blue-500 text-sm">
+        <div className="flex items-center text-blue-base text-sm">
           <svg
-            className="animate-spin -ml-1 mr-2 h-4 w-4 text-blue-500"
+            className="animate-spin -ml-1 mr-2 h-4 w-4 text-blue-base"
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
@@ -57,10 +69,11 @@ export function LinkItem({
         <>
           <div className="flex flex-col flex-1 min-w-0">
             <a
-              href={originalUrl}
+              href={shortUrl}
+              onClick={handleLinkClick}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-600 text-sm font-normal leading-tight hover:underline truncate"
+              className="text-blue-base text-sm font-normal leading-tight hover:underline truncate"
             >
               {shortUrl}
             </a>
@@ -72,7 +85,7 @@ export function LinkItem({
             <span>{accessCount} acessos</span>
             <button
               aria-label="Copy link"
-              className="p-2 rounded bg-gray-100 hover:bg-gray-200 text-gray-400"
+              className="p-2 rounded bg-gray-100 hover:bg-gray-200 text-gray-400 cursor-pointer"
               type="button"
               onClick={handleCopy}
             >
@@ -80,7 +93,7 @@ export function LinkItem({
             </button>
             <button
               aria-label="Delete link"
-              className="p-2 rounded bg-gray-100 hover:bg-gray-200 text-gray-400"
+              className="p-2 rounded bg-gray-100 hover:bg-gray-200 text-gray-400 cursor-pointer"
               type="button"
               onClick={() => onDelete(id)}
             >

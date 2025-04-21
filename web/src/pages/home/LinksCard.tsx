@@ -1,4 +1,3 @@
-// LinksCard.tsx
 import { DownloadSimple, Link } from "@phosphor-icons/react";
 import { LinkItem } from "./LinkItem";
 import { useState } from "react";
@@ -12,10 +11,11 @@ type LinksCardProps = {
     createdAt: string;
   }[];
   onDelete: (id: string) => void;
+  onAccess: (id: string) => Promise<string>; // Nova prop para lidar com o acesso
 };
 
-function LinksCard({ links, onDelete }: LinksCardProps) {
-  const maxHeightInRem = 11;
+function LinksCard({ links, onDelete, onAccess }: LinksCardProps) {
+  const maxHeightInRem = 12;
   const [isExporting, setIsExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
 
@@ -44,18 +44,13 @@ function LinksCard({ links, onDelete }: LinksCardProps) {
         throw new Error("Falha ao baixar o arquivo CSV");
       }
 
-      // Cria um blob com o conteúdo do CSV
       const blob = await getResponse.blob();
-
-      // Cria um link temporário para download
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
       a.download = "links_exportados.csv";
       document.body.appendChild(a);
       a.click();
-
-      // Limpa os recursos
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (err) {
@@ -74,7 +69,7 @@ function LinksCard({ links, onDelete }: LinksCardProps) {
         <button
           onClick={handleExportCSV}
           disabled={isExporting || links.length === 0}
-          className={`bg-gray-200 text-gray-500 p-2 rounded flex items-center hover:bg-gray-300 transition-colors text-sm font-semibold ${
+          className={`bg-gray-200 text-gray-500 p-2 rounded flex items-center hover:bg-gray-300 transition-colors text-sm font-semibold cursor-pointer ${
             isExporting || links.length === 0
               ? "opacity-50 cursor-not-allowed"
               : ""
@@ -114,7 +109,7 @@ function LinksCard({ links, onDelete }: LinksCardProps) {
       </div>
 
       {exportError && (
-        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded text-sm">
+        <div className="mb-4 p-3 bg-red-100 text-danger rounded text-sm">
           {exportError}
         </div>
       )}
@@ -134,6 +129,7 @@ function LinksCard({ links, onDelete }: LinksCardProps) {
                 accessCount={link.accessCount}
                 createdAt={link.createdAt}
                 onDelete={onDelete}
+                onAccess={onAccess}
                 isLast={index === links.length - 1}
               />
             ))}
